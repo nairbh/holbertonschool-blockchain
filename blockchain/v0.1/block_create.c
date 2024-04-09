@@ -1,35 +1,42 @@
+#include <stdlib.h>
+#include <string.h>
 #include "blockchain.h"
 
 /**
- * block_create - Creates a Block
- * @prev: pointer to the previous Block of the Blockchain.
- * @data: pointer to a memory area to duplicate.
- * @data_len: Stores the number of bytes to duplicate in data.
- *            If data_len is bigger than BLOCKCHAIN_DATA_MAX, then only
- *            BLOCKCHAIN_DATA_MAX bytes must be duplicated.
+ * blockchain_create - Creates a new Blockchain structure and initializes it
  *
- * Return: pointer to the allocated Block
+ * Return: Pointer to the created Blockchain structure, or NULL on failure
  */
-block_t *block_create(block_t const *prev, int8_t const *data,
-		      uint32_t data_len)
+blockchain_t *blockchain_create(void)
 {
-	block_t *block;
-	uint32_t len;
+	blockchain_t *blockchain = NULL;
+	block_t *genesis = NULL;
+	llist_t *chain = NULL;
+	char *hash = "\xc5\x2c\x26\xc8\xb5\x46\x16\x39\x63\x5d\x8e\xdf\x2a\x97"
+		     "\xd4\x8d\x0c\x8e\x00\x09\xc8\x17\xf2\xb1\xd3\xd7\xff\x2f"
+		     "\x04\x51\x58\x03";
 
-	if (data_len > BLOCKCHAIN_DATA_MAX)
-		len = BLOCKCHAIN_DATA_MAX;
-	else
-		len = data_len;
+	genesis = calloc(1, sizeof(block_t));
+	if (!genesis)
+		return (NULL);
+	genesis->info.index = 0;
+	genesis->info.difficulty = 0;
+	genesis->info.timestamp = 1537578000;
+	genesis->info.nonce = 0;
+	memset(genesis->info.prev_hash, 0, SHA256_DIGEST_LENGTH);
+	memcpy(genesis->data.buffer, "Holberton School", 16);
+	genesis->data.len = 16;
+	memcpy(&(genesis->hash), hash, SHA256_DIGEST_LENGTH);
 
-	if (!data || !prev)
-		return (NULL);
-	block = calloc(1, sizeof(block_t));
-	if (!block)
-		return (NULL);
-	block->info.index = prev->info.index + 1;
-	block->info.timestamp = time(NULL);
-	memcpy(block->data.buffer, data, len);
-	memcpy(block->info.prev_hash, prev->hash, SHA256_DIGEST_LENGTH);
-	block->data.len = len;
-	return (block);
+	chain = llist_create(MT_SUPPORT_FALSE);
+	if (!chain)
+		return (free(genesis), NULL);
+	if (llist_add_node(chain, genesis, ADD_NODE_FRONT) == -1)
+		return (free(genesis), free(chain), NULL);
+
+	blockchain = calloc(1, sizeof(blockchain_t));
+	if (!blockchain)
+		return (free(genesis), free(chain), NULL);
+	blockchain->chain = chain;
+	return (blockchain);
 }
