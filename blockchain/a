@@ -1,0 +1,24 @@
+#!/bin/bash
+
+SOURCE_DIR="blockchain/v0.2"
+
+DEST_DIR="blockchain/v0.3"
+
+FILES=(
+    "blockchain_create.c"
+    "blockchain_deserialize.c"
+    "blockchain_destroy.c"
+    "blockchain.h"
+    "blockchain_serialize.c"
+    "block_create.c"
+    "block_destroy.c"
+    "block_hash.c"
+    "block_is_valid.c"
+)
+
+for file in "${FILES[@]}"; do
+    cp "$SOURCE_DIR/$file" "$DEST_DIR/"
+done
+
+echo "ファイルのコピーが完了しました。"
+
